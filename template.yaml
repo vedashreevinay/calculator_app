@@ -22,11 +22,11 @@ Resources:
             LogGroupName: calculator-sam-httpapi-loggroup
             RetentionInDays: 1
 
-  CalculatorAppFunction:
+  CalculatorAddFunction:
     Type: AWS::Serverless::Function 
     Properties:
       CodeUri: app/
-      Handler: app.handler
+      Handler: add.handler
       Runtime: nodejs12.x
       Events:
         CalculateApiEvent:
@@ -34,6 +34,21 @@ Resources:
           Properties:
             ApiId: !Ref CalculatorAPI
             Path: /add/{x}/{y}
+            Method: post
+            PayloadFormatVersion: "2.0"
+
+  CalculatorSubtractFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: app/
+      Handler: subtract.handler
+      Runtime: nodejs12.x
+      Events:
+        CalculateApiEvent:
+          Type: HttpApi 
+          Properties:
+            ApiId: !Ref CalculatorAPI
+            Path: /subtract/{x}/{y}
             Method: post
             PayloadFormatVersion: "2.0"
 

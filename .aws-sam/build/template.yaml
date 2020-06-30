@@ -21,11 +21,11 @@ Resources:
     Properties:
       LogGroupName: calculator-sam-httpapi-loggroup
       RetentionInDays: 1
-  CalculatorAppFunction:
+  CalculatorAddFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: CalculatorAppFunction
-      Handler: app.handler
+      CodeUri: CalculatorAddFunction
+      Handler: add.handler
       Runtime: nodejs12.x
       Events:
         CalculateApiEvent:
@@ -34,6 +34,21 @@ Resources:
             ApiId:
               Ref: CalculatorAPI
             Path: /add/{x}/{y}
+            Method: post
+            PayloadFormatVersion: '2.0'
+  CalculatorSubtractFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: CalculatorSubtractFunction
+      Handler: subtract.handler
+      Runtime: nodejs12.x
+      Events:
+        CalculateApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: CalculatorAPI
+            Path: /subtract/{x}/{y}
             Method: post
             PayloadFormatVersion: '2.0'
   MyCognitoUserPool:

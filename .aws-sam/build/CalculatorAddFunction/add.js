@@ -11,9 +11,6 @@ exports.handler = async (event) => {
     
     var z = await add(Number(x), Number(y));
     console.log(z)
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(z),
-    };
-    return response;
+    
+    return z;
 };
