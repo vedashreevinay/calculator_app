@@ -1,0 +1,12 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "calc-sam-app"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-dj1cmwmi29op"
+s3_prefix = "calc-sam-app"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "CognitoDomainName=\"calculator-sam-vedavinay\""
+

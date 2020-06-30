@@ -1,0 +1,6 @@
+{
+    "name": "calculator-sam",
+    "version": "1.0.0",
+    "runtime": "nodejs12.x",
+    "main": "app.js"
+}

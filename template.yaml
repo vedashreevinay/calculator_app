@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  calculator-app
+
+  Sample SAM Template for calculator-app
+  
+Globals:
+  Function:
+    Timeout: 3
+
+Parameters:
+  CognitoDomainName: 
+    Type: String
+    Description: Enter a string for cognito user pool's domain name. This has to be unique in the region. We suggest you prefix/suffix a random string to make it unique. 
+    Default: calculator-sam-veda
+
+Resources:
+  HTTPAPIGatewayLogGroup:
+        Type: AWS::Logs::LogGroup
+        Properties:
+            LogGroupName: calculator-sam-httpapi-loggroup
+            RetentionInDays: 1
+
+  CalculatorAppFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: app/
+      Handler: app.handler
+      Runtime: nodejs12.x
+      Events:
+        CalculateApiEvent:
+          Type: HttpApi 
+          Properties:
+            ApiId: !Ref CalculatorAPI
+            Path: /add/{x}/{y}
+            Method: post
+            PayloadFormatVersion: "2.0"
+
+  MyCognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: calculator-userpool
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: false
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: false
+
+  MyCognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - email
+        - openid
+      CallbackURLs:
+        - https://www.getpostman.com/oauth2/callback
+      UserPoolId: !Ref MyCognitoUserPool
+      ClientName: calculatorAppClient
+      GenerateSecret: false
+      ExplicitAuthFlows: 
+        - ALLOW_USER_PASSWORD_AUTH  # for enabling user to login first time. 
+        - ALLOW_REFRESH_TOKEN_AUTH  # should always be allowed
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref MyCognitoUserPool
+      Domain: !Ref CognitoDomainName 
+
+  CalculatorAPI:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      AccessLogSettings:
+        DestinationArn: !GetAtt HTTPAPIGatewayLogGroup.Arn
+        Format: '{"requestId": "$context.requestId", "userAgent": "$context.identity.userAgent", "httpMethod": "$context.httpMethod", "path": "$context.path", "status": "$context.status", "protocol": "$context.protocol", "integrationStatus": "$context.integrationStatus", "responseLatency": "$context.responseLatency" , "integrationErrorMessage":"$context.integrationErrorMessage"}'
+      FailOnWarnings: true
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 200
+      Auth:
+        Authorizers:
+          OAuth2:
+            JwtConfiguration:
+              issuer: 
+                Fn::Sub: 'https://cognito-idp.${AWS::Region}.${AWS::URLSuffix}/${MyCognitoUserPool}'
+              audience: 
+                - !Ref MyCognitoUserPoolClient
+            IdentitySource: "$request.header.Authorization"
+        DefaultAuthorizer: OAuth2
+      
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  HttpApiUrl:
+    Description: URL of your API endpoint
+    Value:
+      Fn::Sub: 'https://${CalculatorAPI}.execute-api.${AWS::Region}.${AWS::URLSuffix}/'
+  HttpApiId:
+    Description: Api id of HttpApi
+    Value:
+      Ref: CalculatorAPI
+  
