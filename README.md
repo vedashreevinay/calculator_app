@@ -4,7 +4,7 @@ This app uses a microservices model using AWS API GW Http API, AWS lambda and Am
 
 ## Pre-requsites 
 
-AWS account 
+AWS account & 
 aws sam 
 
 ## steps to install the app
