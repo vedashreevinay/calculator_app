@@ -9,6 +9,6 @@ aws sam
 
 ## steps to install the app
 
-sam build --use-container
+sam build --use-container  
 sam deploy --guided 
 
